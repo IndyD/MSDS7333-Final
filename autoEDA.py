@@ -16,6 +16,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
 from sklearn.impute import SimpleImputer
 
+import pdb
 import warnings
 
 warnings.filterwarnings('ignore')
@@ -444,11 +445,13 @@ class autoEDA:
         output_str = 'Cumulative Explained variance at {n} PCA components:'.format(n=output_components)
         print(output_str,sum(pca.explained_variance_ratio_[0:output_components]) )
     
-    def plot_corr_heatmap(self, annot=False):
+    def plot_corr_heatmap(self, annot=False, figsize=(10,10)):
         """ Plot grid of numeric columns with a heat map of their correlations """
         if len(self.numeric_cols) < 2: raise ValueError('Need at least 2 numeric cols for corr heatmap')
         df_numeric = self.df[self.numeric_cols]
-        sns.heatmap(df_numeric.corr(), annot=annot)
+
+        fig, ax = plt.subplots(figsize=figsize)
+        sns.heatmap(df_numeric.corr(), annot=annot, ax=ax)
 
     def _plot_categorical_col(self, col, chart_params):
         raise NotImplementedError
@@ -496,10 +499,16 @@ class ClassificationEDA(autoEDA):
         col_scores = []
         for col in self.categorical_cols:
             y = sample_df[self.target]
-            X_onehot = pd.get_dummies(sample_df[col], drop_first=True)
+            try:
+                X_onehot = pd.get_dummies(sample_df[col], drop_first=True)
+            except:
+                pdb.set_trace()
 
             lr = LogisticRegression(n_jobs=-1, max_iter=999)
-            lr.fit(X_onehot,y)
+            try:
+                lr.fit(X_onehot,y)
+            except:
+                pdb.set_trace()
             y_pred = lr.predict(X_onehot)
             acc = accuracy_score(y_pred, y)
 
